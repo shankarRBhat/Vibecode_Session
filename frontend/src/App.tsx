@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, ChevronDown, Clock3, CreditCard, Heart, MapPin, Minus, Plus, Search, ShoppingBag, Smartphone, Sparkles, Star, Store, UserRound, Utensils, X } from "lucide-react";
 
 type MenuItem = { id: string; name: string; description: string; price: number; vegetarian: boolean; image: string };
@@ -29,6 +29,18 @@ const restaurants: Restaurant[] = [
 ];
 
 const categories = [["All", "✦"], ["Biryani", "🍛"], ["Pizza", "🍕"], ["South Indian", "🥘"], ["Burgers", "🍔"], ["Desserts", "🍰"]];
+const portalSlides = [
+  { image: foodImages.biryani, alt: "Biryani ready to order", label: "Biryani nights" },
+  { image: foodImages.dosa, alt: "Crisp masala dosa", label: "South Indian classics" },
+  { image: foodImages.pizza, alt: "Freshly baked pizza", label: "Pizza, freshly baked" },
+  { image: foodImages.burger, alt: "Juicy burger ready to serve", label: "Burgers worth sharing" },
+  { image: foodImages.thali, alt: "A colorful Indian thali", label: "A table full of comfort" },
+  { image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=960&q=85", alt: "Fresh grain bowl with greens", label: "Bright grain bowls" },
+  { image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=960&q=85", alt: "Creamy pasta with herbs", label: "Pasta comfort" },
+  { image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=960&q=85", alt: "Berry smoothie in a glass", label: "Berry smoothies" },
+  { image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=960&q=85", alt: "Iced coffee on a table", label: "Slow coffee moments" },
+  { image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=960&q=85", alt: "Chocolate dessert with berries", label: "Something sweet" },
+];
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 type SortOption = "relevance" | "price-low" | "price-high" | "time-low" | "time-high" | "rating-high" | "rating-low";
 
@@ -44,6 +56,13 @@ export function App() {
   const [cartNotice, setCartNotice] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
   const [hasStarted, setHasStarted] = useState(false);
+  const [portalSlide, setPortalSlide] = useState(0);
+
+  useEffect(() => {
+    if (hasStarted) return;
+    const timer = window.setInterval(() => setPortalSlide((current) => (current + 1) % portalSlides.length), 3200);
+    return () => window.clearInterval(timer);
+  }, [hasStarted]);
 
   const visibleRestaurants = useMemo(() => {
     const filtered = restaurants.filter((restaurant) => {
@@ -75,7 +94,7 @@ export function App() {
   function changeQuantity(id: string, delta: number) { setCart((current) => { const next = { ...current }; const entry = next[id]; if (!entry) return current; if (entry.quantity + delta < 1) delete next[id]; else next[id] = { ...entry, quantity: entry.quantity + delta }; return next; }); }
   function closeOverlays() { setPanel(null); setSelectedRestaurant(null); }
 
-  if (!hasStarted) return <main className="welcome-portal"><div className="portal-glow glow-one" /><div className="portal-glow glow-two" /><div className="portal-content"><div className="portal-brand"><span className="brand-mark"><Utensils size={19} /></span><span>FOODFLOW</span></div><span className="portal-kicker"><Sparkles size={14} /> Bengaluru, served beautifully</span><h1>Discover.<br /><em>Order.</em><br />Enjoy.</h1><p>Local favorites, iconic kitchens, and your next great meal are closer than you think.</p><button className="start-button" onClick={() => setHasStarted(true)}>Get Started <ArrowRight size={19} /></button><small>Curated restaurants across Bengaluru</small></div><div className="portal-visual"><div className="portal-ring ring-one" /><div className="portal-ring ring-two" /><img src={foodImages.biryani} alt="Biryani ready to order" /><div className="portal-badge"><Star size={14} fill="currentColor" /> 4.8 local favorites</div></div><div className="portal-footer"><span>FOODFLOW</span><span>Discover. Order. Track. Enjoy.</span></div></main>;
+  if (!hasStarted) return <main className="welcome-portal"><div className="portal-glow glow-one" /><div className="portal-glow glow-two" /><div className="portal-content"><div className="portal-brand"><span className="brand-mark"><Utensils size={19} /></span><span>FOODFLOW</span></div><span className="portal-kicker"><Sparkles size={14} /> Bengaluru, served beautifully</span><h1>Discover.<br /><em>Order.</em><br />Enjoy.</h1><p>Local favorites, iconic kitchens, and your next great meal are closer than you think.</p><button className="start-button" onClick={() => setHasStarted(true)}>Get Started <ArrowRight size={19} /></button><small>Curated restaurants across Bengaluru</small></div><div className="portal-visual" aria-label="Food highlights slideshow"><div className="portal-ring ring-one" /><div className="portal-ring ring-two" /><div className="portal-slide-frame"><img key={portalSlides[portalSlide].image} src={portalSlides[portalSlide].image} alt={portalSlides[portalSlide].alt} /></div><div className="portal-badge"><Star size={14} fill="currentColor" /> 4.8 local favorites</div><div className="portal-dots" aria-label="Choose a featured dish">{portalSlides.map((slide, index) => <button key={slide.image} className={index === portalSlide ? "active" : ""} onClick={() => setPortalSlide(index)} aria-label={`Show featured image ${index + 1}`} aria-current={index === portalSlide ? "true" : undefined} />)}</div></div><div className="portal-footer"><span>FOODFLOW</span><span>Discover. Order. Track. Enjoy.</span></div></main>;
 
   return <main className="app-shell">
     <nav className="topbar"><button className="brand" onClick={closeOverlays}><span className="brand-mark"><Utensils size={17} /></span><span>FOODFLOW</span></button><button className="location-button"><MapPin size={17} /><span><small>Delivering to</small>{location}</span><ChevronDown size={16} /></button><div className="nav-actions"><button className="icon-button" aria-label="Favorites"><Heart size={19} /></button><button className="cart-button" onClick={() => setPanel("cart")}><ShoppingBag size={18} /><span>Cart</span>{cartItems.length > 0 && <b>{cartItems.reduce((count, entry) => count + entry.quantity, 0)}</b>}</button><button className="account-button" onClick={() => setPanel("login")}><UserRound size={16} />{loggedIn ? "Aarav" : "Log in"}</button></div></nav>
