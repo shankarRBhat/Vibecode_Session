@@ -30,6 +30,7 @@ const restaurants: Restaurant[] = [
 
 const categories = [["All", "✦"], ["Biryani", "🍛"], ["Pizza", "🍕"], ["South Indian", "🥘"], ["Burgers", "🍔"], ["Desserts", "🍰"]];
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
+type SortOption = "relevance" | "price-low" | "price-high" | "time-low" | "time-high" | "rating-high" | "rating-low";
 
 export function App() {
   const [query, setQuery] = useState("");
@@ -41,11 +42,24 @@ export function App() {
   const [location, setLocation] = useState("Indiranagar, Bengaluru");
   const [loggedIn, setLoggedIn] = useState(false);
   const [cartNotice, setCartNotice] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>("relevance");
 
-  const visibleRestaurants = useMemo(() => restaurants.filter((restaurant) => {
+  const visibleRestaurants = useMemo(() => {
+    const filtered = restaurants.filter((restaurant) => {
     const text = `${restaurant.name} ${restaurant.cuisine} ${restaurant.neighborhood} ${restaurant.menu.map((item) => item.name).join(" ")}`.toLowerCase();
     return (!query || text.includes(query.toLowerCase())) && (category === "All" || restaurant.cuisine.toLowerCase().includes(category.toLowerCase()));
-  }), [category, query]);
+    });
+    const averagePrice = (restaurant: Restaurant) => restaurant.menu.reduce((sum, item) => sum + item.price, 0) / restaurant.menu.length;
+    return [...filtered].sort((left, right) => {
+      if (sortOption === "price-low") return averagePrice(left) - averagePrice(right);
+      if (sortOption === "price-high") return averagePrice(right) - averagePrice(left);
+      if (sortOption === "time-low") return Number.parseInt(left.time) - Number.parseInt(right.time);
+      if (sortOption === "time-high") return Number.parseInt(right.time) - Number.parseInt(left.time);
+      if (sortOption === "rating-high") return Number.parseFloat(right.rating) - Number.parseFloat(left.rating);
+      if (sortOption === "rating-low") return Number.parseFloat(left.rating) - Number.parseFloat(right.rating);
+      return Number.parseFloat(right.rating) - Number.parseFloat(left.rating);
+    });
+  }, [category, query, sortOption]);
   const cartItems = Object.values(cart);
   const subtotal = cartItems.reduce((total, entry) => total + entry.item.price * entry.quantity, 0);
   const deliveryFee = subtotal === 0 || subtotal >= 499 ? 0 : 39;
@@ -70,7 +84,7 @@ export function App() {
     <section className="trust-strip"><span><Check size={15} /> Curated Bangalore restaurants</span><span><Check size={15} /> Transparent checkout</span><span><Check size={15} /> Live order-ready flow</span></section>
     <section className="content-section category-section"><div className="section-heading"><div><span className="section-kicker">Explore Bengaluru</span><h2>What are you in the mood for?</h2></div><span className="result-count">{visibleRestaurants.length} restaurants</span></div><div className="category-row">{categories.map(([name, icon]) => <button key={name} className={category === name ? "category active" : "category"} onClick={() => setCategory(name)}><span>{icon}</span><small>{name === "All" ? "Everything" : name}</small></button>)}</div></section>
 
-    <section className="content-section"><div className="section-heading"><div><span className="section-kicker">Verified local names</span><h2>Restaurants near {location.split(",")[0]}</h2></div><div className="sort-pill"><Clock3 size={15} /> Fast delivery <ChevronDown size={14} /></div></div><div className="restaurant-grid">{visibleRestaurants.map((restaurant) => <article className="restaurant-card" key={restaurant.id}><button className="card-image" onClick={() => setSelectedRestaurant(restaurant)}><img src={restaurant.image} alt={restaurant.name} /><span className="offer-tag">{restaurant.tag}</span></button><div className="card-body"><div className="card-title"><button className="restaurant-name" onClick={() => setSelectedRestaurant(restaurant)}>{restaurant.name}</button><span className="rating"><Star size={13} fill="currentColor" /> {restaurant.rating}</span></div><p>{restaurant.cuisine} · {restaurant.neighborhood}</p><div className="card-meta"><span>{restaurant.time}</span><button className={favorites.includes(restaurant.id) ? "favorite inline active" : "favorite inline"} onClick={() => setFavorites((current) => current.includes(restaurant.id) ? current.filter((id) => id !== restaurant.id) : [...current, restaurant.id])} aria-label={`Favorite ${restaurant.name}`}><Heart size={16} fill={favorites.includes(restaurant.id) ? "currentColor" : "none"} /></button><button className="view-menu" onClick={() => setSelectedRestaurant(restaurant)}>View menu <ArrowRight size={14} /></button></div></div></article>)}</div>{visibleRestaurants.length === 0 && <div className="empty-state"><Search size={25} /><h3>No matches yet</h3><p>Try a different restaurant, dish, or neighborhood.</p></div>}</section>
+    <section className="content-section"><div className="section-heading"><div><span className="section-kicker">Verified local names</span><h2>Restaurants near {location.split(",")[0]}</h2></div><label className="sort-control"><Clock3 size={15} /><span>Sort by</span><select aria-label="Sort restaurants" value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}><option value="relevance">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="time-low">Delivery: fastest first</option><option value="time-high">Delivery: slowest first</option><option value="rating-high">Rating: high to low</option><option value="rating-low">Rating: low to high</option></select><ChevronDown size={14} /></label></div><div className="restaurant-grid">{visibleRestaurants.map((restaurant) => <article className="restaurant-card" key={restaurant.id}><button className="card-image" onClick={() => setSelectedRestaurant(restaurant)}><img src={restaurant.image} alt={restaurant.name} /><span className="offer-tag">{restaurant.tag}</span></button><div className="card-body"><div className="card-title"><button className="restaurant-name" onClick={() => setSelectedRestaurant(restaurant)}>{restaurant.name}</button><span className="rating"><Star size={13} fill="currentColor" /> {restaurant.rating}</span></div><p>{restaurant.cuisine} · {restaurant.neighborhood}</p><div className="card-meta"><span>{restaurant.time}</span><button className={favorites.includes(restaurant.id) ? "favorite inline active" : "favorite inline"} onClick={() => setFavorites((current) => current.includes(restaurant.id) ? current.filter((id) => id !== restaurant.id) : [...current, restaurant.id])} aria-label={`Favorite ${restaurant.name}`}><Heart size={16} fill={favorites.includes(restaurant.id) ? "currentColor" : "none"} /></button><button className="view-menu" onClick={() => setSelectedRestaurant(restaurant)}>View menu <ArrowRight size={14} /></button></div></div></article>)}</div>{visibleRestaurants.length === 0 && <div className="empty-state"><Search size={25} /><h3>No matches yet</h3><p>Try a different restaurant, dish, or neighborhood.</p></div>}</section>
     {cartItems.length > 0 && <div className="live-cart" role="region" aria-label="Live cart summary"><div className="live-cart-icon"><ShoppingBag size={18} /></div><div className="live-cart-copy"><strong>{cartItems.reduce((count, entry) => count + entry.quantity, 0)} items in your cart</strong><span>{cartItems.slice(0, 2).map(({ item, quantity }) => `${quantity} × ${item.name}`).join(" · ")}{cartItems.length > 2 ? " · +more" : ""}</span></div><b>{money(subtotal)}</b><button onClick={() => setPanel("cart")}>View cart <ArrowRight size={15} /></button></div>}
     <section className="content-section recommendation"><div><span className="section-kicker">Your taste profile</span><h2>Because you liked <em>Masala Dosa</em></h2><p>More crisp, comforting South Indian picks from kitchens nearby.</p></div><button className="outline-button" onClick={() => { setCategory("South Indian"); window.scrollTo({ top: 650, behavior: "smooth" }); }}>View recommendations <ArrowRight size={16} /></button></section>
     <footer><div className="brand"><span className="brand-mark"><Utensils size={15} /></span><span>FOODFLOW</span></div><span>Discover. Order. Track. Enjoy.</span><span>© 2026 Foodflow · Demo ordering experience</span></footer>
