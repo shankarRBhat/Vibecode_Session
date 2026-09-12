@@ -5,11 +5,11 @@ type MenuItem = { id: string; name: string; description: string; price: number; 
 type Restaurant = { id: string; name: string; neighborhood: string; cuisine: string; rating: string; time: string; tag: string; image: string; menu: MenuItem[] };
 
 const foodImages = {
-  biryani: "https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=500&q=85",
-  dosa: "https://images.unsplash.com/photo-1630383249896-424e482df921?auto=format&fit=crop&w=500&q=85",
-  thali: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=85",
-  burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=85",
-  pizza: "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=500&q=85",
+  biryani: "/food/biryani.jpg",
+  dosa: "/food/dosa.jpg",
+  thali: "/food/thali.jpg",
+  burger: "/food/burger.jpg",
+  pizza: "/food/pizza.jpg",
 };
 
 const restaurants: Restaurant[] = [
