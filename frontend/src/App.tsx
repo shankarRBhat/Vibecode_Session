@@ -40,6 +40,7 @@ export function App() {
   const [panel, setPanel] = useState<"login" | "cart" | "checkout" | "success" | null>(null);
   const [location, setLocation] = useState("Indiranagar, Bengaluru");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [cartNotice, setCartNotice] = useState<string | null>(null);
 
   const visibleRestaurants = useMemo(() => restaurants.filter((restaurant) => {
     const text = `${restaurant.name} ${restaurant.cuisine} ${restaurant.neighborhood} ${restaurant.menu.map((item) => item.name).join(" ")}`.toLowerCase();
@@ -51,12 +52,18 @@ export function App() {
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + deliveryFee + tax;
 
-  function addToCart(item: MenuItem) { setCart((current) => ({ ...current, [item.id]: { item, quantity: (current[item.id]?.quantity ?? 0) + 1 } })); }
+  function addToCart(item: MenuItem) {
+    setCart((current) => ({ ...current, [item.id]: { item, quantity: (current[item.id]?.quantity ?? 0) + 1 } }));
+    setCartNotice(`${item.name} added to cart`);
+    window.setTimeout(() => setCartNotice(null), 2200);
+  }
   function changeQuantity(id: string, delta: number) { setCart((current) => { const next = { ...current }; const entry = next[id]; if (!entry) return current; if (entry.quantity + delta < 1) delete next[id]; else next[id] = { ...entry, quantity: entry.quantity + delta }; return next; }); }
   function closeOverlays() { setPanel(null); setSelectedRestaurant(null); }
 
   return <main className="app-shell">
     <nav className="topbar"><button className="brand" onClick={closeOverlays}><span className="brand-mark"><Utensils size={17} /></span><span>FOODFLOW</span></button><button className="location-button"><MapPin size={17} /><span><small>Delivering to</small>{location}</span><ChevronDown size={16} /></button><div className="nav-actions"><button className="icon-button" aria-label="Favorites"><Heart size={19} /></button><button className="cart-button" onClick={() => setPanel("cart")}><ShoppingBag size={18} /><span>Cart</span>{cartItems.length > 0 && <b>{cartItems.reduce((count, entry) => count + entry.quantity, 0)}</b>}</button><button className="account-button" onClick={() => setPanel("login")}><UserRound size={16} />{loggedIn ? "Aarav" : "Log in"}</button></div></nav>
+
+    {cartNotice && <div className="cart-toast" role="status"><span className="toast-check"><Check size={15} /></span><span><strong>Added to cart</strong><small>{cartNotice.replace(" added to cart", "")}</small></span><button onClick={() => setPanel("cart")}>View cart</button></div>}
 
     <section className="hero"><div className="hero-copy"><span className="eyebrow"><Store size={14} /> Bengaluru's local kitchens</span><h1>Good food,<br /><em>good mood.</em></h1><p>Order from the restaurants you know and love across Bengaluru, delivered to your door.</p><label className="search-box"><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search restaurants, dishes or cuisines" /><kbd>/</kbd></label></div><div className="hero-visual"><div className="hero-orbit orbit-one" /><div className="hero-orbit orbit-two" /><div className="plate"><img src={foodImages.biryani} alt="Bangalore biryani" /></div><div className="floating-note"><Star size={15} fill="currentColor" /> <strong>4.8</strong><span>from Bengaluru locals</span></div></div></section>
 
@@ -64,6 +71,7 @@ export function App() {
     <section className="content-section category-section"><div className="section-heading"><div><span className="section-kicker">Explore Bengaluru</span><h2>What are you in the mood for?</h2></div><span className="result-count">{visibleRestaurants.length} restaurants</span></div><div className="category-row">{categories.map(([name, icon]) => <button key={name} className={category === name ? "category active" : "category"} onClick={() => setCategory(name)}><span>{icon}</span><small>{name === "All" ? "Everything" : name}</small></button>)}</div></section>
 
     <section className="content-section"><div className="section-heading"><div><span className="section-kicker">Verified local names</span><h2>Restaurants near {location.split(",")[0]}</h2></div><div className="sort-pill"><Clock3 size={15} /> Fast delivery <ChevronDown size={14} /></div></div><div className="restaurant-grid">{visibleRestaurants.map((restaurant) => <article className="restaurant-card" key={restaurant.id}><button className="card-image" onClick={() => setSelectedRestaurant(restaurant)}><img src={restaurant.image} alt={restaurant.name} /><span className="offer-tag">{restaurant.tag}</span></button><div className="card-body"><div className="card-title"><button className="restaurant-name" onClick={() => setSelectedRestaurant(restaurant)}>{restaurant.name}</button><span className="rating"><Star size={13} fill="currentColor" /> {restaurant.rating}</span></div><p>{restaurant.cuisine} · {restaurant.neighborhood}</p><div className="card-meta"><span>{restaurant.time}</span><button className={favorites.includes(restaurant.id) ? "favorite inline active" : "favorite inline"} onClick={() => setFavorites((current) => current.includes(restaurant.id) ? current.filter((id) => id !== restaurant.id) : [...current, restaurant.id])} aria-label={`Favorite ${restaurant.name}`}><Heart size={16} fill={favorites.includes(restaurant.id) ? "currentColor" : "none"} /></button><button className="view-menu" onClick={() => setSelectedRestaurant(restaurant)}>View menu <ArrowRight size={14} /></button></div></div></article>)}</div>{visibleRestaurants.length === 0 && <div className="empty-state"><Search size={25} /><h3>No matches yet</h3><p>Try a different restaurant, dish, or neighborhood.</p></div>}</section>
+    {cartItems.length > 0 && <div className="live-cart" role="region" aria-label="Live cart summary"><div className="live-cart-icon"><ShoppingBag size={18} /></div><div className="live-cart-copy"><strong>{cartItems.reduce((count, entry) => count + entry.quantity, 0)} items in your cart</strong><span>{cartItems.slice(0, 2).map(({ item, quantity }) => `${quantity} × ${item.name}`).join(" · ")}{cartItems.length > 2 ? " · +more" : ""}</span></div><b>{money(subtotal)}</b><button onClick={() => setPanel("cart")}>View cart <ArrowRight size={15} /></button></div>}
     <section className="content-section recommendation"><div><span className="section-kicker">Your taste profile</span><h2>Because you liked <em>Masala Dosa</em></h2><p>More crisp, comforting South Indian picks from kitchens nearby.</p></div><button className="outline-button" onClick={() => { setCategory("South Indian"); window.scrollTo({ top: 650, behavior: "smooth" }); }}>View recommendations <ArrowRight size={16} /></button></section>
     <footer><div className="brand"><span className="brand-mark"><Utensils size={15} /></span><span>FOODFLOW</span></div><span>Discover. Order. Track. Enjoy.</span><span>© 2026 Foodflow · Demo ordering experience</span></footer>
 
