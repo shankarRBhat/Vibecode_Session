@@ -4,6 +4,7 @@ test.describe("Customer discovery", () => {
   test("searches, filters, favorites, and adds a restaurant to cart", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/FOODFLOW/);
+    await page.getByRole("button", { name: "Get Started" }).click();
     await expect(page.getByRole("heading", { name: "Good food, good mood." })).toBeVisible();
 
     const search = page.getByPlaceholder("Search restaurants, dishes or cuisines");

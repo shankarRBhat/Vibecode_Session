@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, ChevronDown, Clock3, CreditCard, Heart, MapPin, Minus, Plus, Search, ShoppingBag, Smartphone, Star, Store, UserRound, Utensils, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Clock3, CreditCard, Heart, MapPin, Minus, Plus, Search, ShoppingBag, Smartphone, Sparkles, Star, Store, UserRound, Utensils, X } from "lucide-react";
 
 type MenuItem = { id: string; name: string; description: string; price: number; vegetarian: boolean; image: string };
 type Restaurant = { id: string; name: string; neighborhood: string; cuisine: string; rating: string; time: string; tag: string; image: string; menu: MenuItem[] };
@@ -43,6 +43,7 @@ export function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [cartNotice, setCartNotice] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
+  const [hasStarted, setHasStarted] = useState(false);
 
   const visibleRestaurants = useMemo(() => {
     const filtered = restaurants.filter((restaurant) => {
@@ -73,6 +74,8 @@ export function App() {
   }
   function changeQuantity(id: string, delta: number) { setCart((current) => { const next = { ...current }; const entry = next[id]; if (!entry) return current; if (entry.quantity + delta < 1) delete next[id]; else next[id] = { ...entry, quantity: entry.quantity + delta }; return next; }); }
   function closeOverlays() { setPanel(null); setSelectedRestaurant(null); }
+
+  if (!hasStarted) return <main className="welcome-portal"><div className="portal-glow glow-one" /><div className="portal-glow glow-two" /><div className="portal-content"><div className="portal-brand"><span className="brand-mark"><Utensils size={19} /></span><span>FOODFLOW</span></div><span className="portal-kicker"><Sparkles size={14} /> Bengaluru, served beautifully</span><h1>Discover.<br /><em>Order.</em><br />Enjoy.</h1><p>Local favorites, iconic kitchens, and your next great meal are closer than you think.</p><button className="start-button" onClick={() => setHasStarted(true)}>Get Started <ArrowRight size={19} /></button><small>Curated restaurants across Bengaluru</small></div><div className="portal-visual"><div className="portal-ring ring-one" /><div className="portal-ring ring-two" /><img src={foodImages.biryani} alt="Biryani ready to order" /><div className="portal-badge"><Star size={14} fill="currentColor" /> 4.8 local favorites</div></div><div className="portal-footer"><span>FOODFLOW</span><span>Discover. Order. Track. Enjoy.</span></div></main>;
 
   return <main className="app-shell">
     <nav className="topbar"><button className="brand" onClick={closeOverlays}><span className="brand-mark"><Utensils size={17} /></span><span>FOODFLOW</span></button><button className="location-button"><MapPin size={17} /><span><small>Delivering to</small>{location}</span><ChevronDown size={16} /></button><div className="nav-actions"><button className="icon-button" aria-label="Favorites"><Heart size={19} /></button><button className="cart-button" onClick={() => setPanel("cart")}><ShoppingBag size={18} /><span>Cart</span>{cartItems.length > 0 && <b>{cartItems.reduce((count, entry) => count + entry.quantity, 0)}</b>}</button><button className="account-button" onClick={() => setPanel("login")}><UserRound size={16} />{loggedIn ? "Aarav" : "Log in"}</button></div></nav>
