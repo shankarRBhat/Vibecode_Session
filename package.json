@@ -1,0 +1,22 @@
+{
+  "name": "vibe-it",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "playwright:install": "playwright install",
+    "playwright:mcp": "playwright-mcp",
+    "playwright:agents": "playwright init-agents --loop=copilot --prompts",
+    "playwright:skills": "playwright init-skills --loop=agents"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.80",
+    "@playwright/test": "^1.63.0"
+  }
+}

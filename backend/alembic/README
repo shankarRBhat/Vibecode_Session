@@ -1,0 +1,6 @@
+Alembic migration directory for FOODFLOW.
+
+Create the first migration after PostgreSQL is available:
+
+    alembic revision --autogenerate -m "create initial schema"
+    alembic upgrade head
